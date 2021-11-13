@@ -79,26 +79,49 @@ const getBookingsByCustomerId = async (req, res) => {
   }
 };
 
+const replaceCustomerValues = (customer, newCustomer) => {
+  // replace only the fields comming from newCustomer ...^
+  // newCustomer does not have all the fields!
+  //customer = {id: 1, email: '', ...}
+  let updatedCustomer = {}; // creating the same object as customer
+  for (const propertyName in customer) {
+    updatedCustomer[propertyName] = customer[propertyName];
+  }
+  for (const propertyName in newCustomer) {
+    // ONLY filling the properties that come from newCustomer
+    updatedCustomer[propertyName] = newCustomer[propertyName];
+  }
+
+  return updatedCustomer;
+};
+const getCustomerFromDatabase = async (customerId) => {
+  const result = await pool.query(`SELECT * FROM customers WHERE id=$1`, [
+    customerId,
+  ]);
+  const dbCustomer = result.rows[0];
+  return dbCustomer;
+};
+
 //Update customer's information
 const updateCustomerInfo = async (req, res) => {
   try {
     const customerId = req.params.customerId;
-    const newEmail = req.body.email;
-    const newAddress = req.body.address;
-    const newCity = req.body.city;
-    const newPostcode = req.body.postcode;
-    const newCountry = req.body.country;
+    const requestCustomer = req.body;
 
-    //email verification, not working
-    const result = await pool.query("SELECT * FROM customers WHERE email=$1", [
-      newEmail,
-    ]);
-    if (result.rows.length < 0) {
-      return res.status(400).send("Please add email");
-    }
+    const dbCustomer = await getCustomerFromDatabase(customerId);
+    const customer = replaceCustomerValues(dbCustomer, requestCustomer);
+
     await pool.query(
-      `UPDATE customers SET email=$1, address=$2, city=$3, postcode=$4, country=$5 WHERE id=$6`,
-      [newEmail, newAddress, newCity, newPostcode, newCountry, customerId]
+      `UPDATE customers SET email=$1, address=$2, city=$3, postcode=$4, country=$5, name=$6 WHERE id=$7`,
+      [
+        customer.email,
+        customer.address,
+        customer.city,
+        customer.postcode,
+        customer.country,
+        customer.name,
+        customer.id,
+      ]
     );
     await res.status(202).send(`Customer ${customerId} updated`);
   } catch (err) {

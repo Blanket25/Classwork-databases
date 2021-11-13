@@ -72,9 +72,17 @@ const getHotelById = async (req, res) => {
 const deleteHotel = async (req, res) => {
   try {
     const hotelId = req.params.hotelId;
-    await pool.query(`DELETE FROM bookings WHERE hotel_id=$1`, [hotelId]);
-    await pool.query(`DELETE FROM hotels WHERE id=$1`, [hotelId]);
-    await res.status(200).send(`Hotel ${hotelId} deleted`);
+    const bookingQuery = await pool.query(
+      `SELECT * FROM bookings WHERE hotel_id=$1`,
+      [hotelId]
+    );
+    if (bookingQuery.rows.length > 0) {
+      res.status(400).send(`The hotel with id ${hotelId} has pending bookings`);
+    } else {
+      await pool.query(`DELETE FROM bookings WHERE hotel_id=$1`, [hotelId]);
+      await pool.query(`DELETE FROM hotels WHERE id=$1`, [hotelId]);
+      await res.status(200).send(`Hotel ${hotelId} deleted`);
+    }
   } catch (err) {
     console.log(err);
   }
