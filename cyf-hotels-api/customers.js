@@ -7,7 +7,7 @@ const getAllCustomers = async (req, res) => {
   try {
     let query = `SELECT * FROM customers ORDER BY name`;
     const result = await pool.query(query);
-    await res.status(200).send(result.rows);
+    res.status(200).send(result.rows);
   } catch (err) {
     console.log(err);
   }
@@ -20,7 +20,7 @@ const getCustomerById = async (req, res) => {
     const result = await pool.query(`SELECT * FROM customers WHERE id=$1`, [
       customerId,
     ]);
-    await res.status(201).send(result.rows);
+    res.status(201).send(result.rows);
   } catch (err) {
     console.log(err);
   }
@@ -55,7 +55,7 @@ const createCustomer = async (req, res) => {
         newCustomerCountry,
       ]);
       const responseBody = { customerId: insertResult.rows[0].id };
-      await res.status(201).send(responseBody);
+      res.status(201).send(responseBody);
     }
   } catch (err) {
     console.log(err);
@@ -73,7 +73,7 @@ const getBookingsByCustomerId = async (req, res) => {
         where customer_id = $1`,
       [customerId]
     );
-    await res.status(200).send(selection.rows);
+    res.status(200).send(selection.rows);
   } catch (err) {
     console.log(err);
   }
@@ -123,7 +123,7 @@ const updateCustomerInfo = async (req, res) => {
         customer.id,
       ]
     );
-    await res.status(202).send(`Customer ${customerId} updated`);
+    res.status(202).send(`Customer ${customerId} updated`);
   } catch (err) {
     console.log(err);
   }
@@ -135,7 +135,7 @@ const deleteCustomer = async (req, res) => {
     const customerId = req.params.customerId;
     await pool.query(`DELETE FROM bookings WHERE customer_id=$1`, [customerId]);
     await pool.query(`DELETE FROM customers WHERE id=$1`, [customerId]);
-    await res.status(200).send(`Customer ${customerId} deleted`);
+    res.status(200).send(`Customer ${customerId} deleted`);
   } catch (err) {
     console.log(err);
   }

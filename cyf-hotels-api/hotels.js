@@ -11,7 +11,7 @@ const getAllHotels = async (req, res) => {
       query = `SELECT * FROM hotels WHERE name LIKE '%${hotelNameQuery}%' ORDER BY name`;
     }
     const result = await pool.query(query);
-    await res.status(200).send(result.rows);
+    res.status(200).send(result.rows);
   } catch (err) {
     console.log(err);
   }
@@ -48,7 +48,7 @@ const createHotel = async (req, res) => {
       ]);
       const responseBody = { hotelId: insertResult.rows[0].id };
 
-      await res.status(201).send(responseBody);
+      res.status(201).send(responseBody);
     }
   } catch (err) {
     console.log(err);
@@ -62,7 +62,7 @@ const getHotelById = async (req, res) => {
     const result = await pool.query(`SELECT * FROM hotels WHERE id=$1`, [
       hotelId,
     ]);
-    await res.status(200).send(result.rows);
+    res.status(200).send(result.rows);
   } catch (err) {
     console.log(err);
   }
@@ -81,7 +81,7 @@ const deleteHotel = async (req, res) => {
     } else {
       await pool.query(`DELETE FROM bookings WHERE hotel_id=$1`, [hotelId]);
       await pool.query(`DELETE FROM hotels WHERE id=$1`, [hotelId]);
-      await res.status(200).send(`Hotel ${hotelId} deleted`);
+      res.status(200).send(`Hotel ${hotelId} deleted`);
     }
   } catch (err) {
     console.log(err);
